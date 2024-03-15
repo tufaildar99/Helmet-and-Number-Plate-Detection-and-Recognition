@@ -1,3 +1,4 @@
+import uuid
 import cv2
 import numpy as np
 import os
@@ -5,6 +6,10 @@ import imutils
 from tensorflow import keras
 from keras.models import load_model
 from easyocr import Reader
+from db import Database
+from bucket import Bucket 
+db = Database()
+bucket = Bucket()
 
 model_path = './saved_model.pb'
 reader = Reader(['en'], model_storage_directory=model_path)
@@ -112,7 +117,13 @@ while ret:
                             number = ''.join(number.split()).upper()
                             number = ''.join(e for e in number if e.isalnum())
                             L_P = text + ' ' + number
-
+                            try:
+                                file_name = str(uuid.uuid4())
+                                cv2.imwrite(f'./nohelmet/{file_name}.png', img)
+                                bucket.upload_blob(f'./nohelmet/{file_name}.png', f'{file_name}.png')
+                                db.addViolation(L_P, f'{file_name}.png')
+                            except Exception as e:
+                                print('Error adding violation to database:', str(e))
                         except:
                             L_P = 'Number Plate not detected, needs manual intervention'
                         print('Number Plate:', L_P)
@@ -126,6 +137,7 @@ while ret:
     if cv2.waitKey(1) == 27:
         break
 
+db.close()
 writer.release()
 cap.release()
 cv2.waitKey(0)

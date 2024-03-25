@@ -45,3 +45,11 @@ class Database:
         cursor.close()
         return result
     
+    def getEmail(self, number_plate):
+        cursor = self.cnx.cursor()
+        query = 'SELECT email FROM user_info WHERE number_plate = %s'
+        cursor.execute(query, (number_plate,))
+        result = cursor.fetchall()
+        cursor.close()
+        return result[0][0]
+    

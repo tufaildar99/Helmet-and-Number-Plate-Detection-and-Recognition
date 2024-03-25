@@ -7,9 +7,11 @@ from tensorflow import keras
 from keras.models import load_model
 from easyocr import Reader
 from db import Database
-from bucket import Bucket 
+from bucket import Bucket
+from sendemail import SendEmail 
 db = Database()
 bucket = Bucket()
+sendemail = SendEmail()
 
 model_path = './saved_model.pb'
 reader = Reader(['en'], model_storage_directory=model_path)
@@ -122,6 +124,8 @@ while ret:
                                 cv2.imwrite(f'./nohelmet/{file_name}.png', img)
                                 bucket.upload_blob(f'./nohelmet/{file_name}.png', f'{file_name}.png')
                                 db.addViolation(L_P, f'{file_name}.png')
+                                sendemail.send_email(L_P, f'{file_name}.png')
+
                             except Exception as e:
                                 print('Error adding violation to database:', str(e))
                         except:

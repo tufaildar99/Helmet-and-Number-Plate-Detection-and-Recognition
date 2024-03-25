@@ -1,10 +1,12 @@
 import http.server
 import socketserver
 from urllib.parse import urlparse, parse_qs
+from bucket import Bucket
 import json
 
 from db import Database
 db = Database()
+bucket = Bucket()
 # Define the handler to use for incoming requests
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
@@ -40,7 +42,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                     result.append({
                         "no": violation[0],
                         "timestamp": str(violation[1]),
-                        "proof": violation[2]
+                        "proof": bucket.get_public_url(violation[2])
                     })
 
                 # Convert the result to JSON and send it
